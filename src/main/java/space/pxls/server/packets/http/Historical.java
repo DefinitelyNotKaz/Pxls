@@ -15,8 +15,11 @@ public class Historical {
 	}
 
 	public static Historical fromDB(int x, int y) {
-		return Historical.fromDB(App.getDatabase().getPixelHistoryAt(x, y).orElse(null));
+	    Optional<List<DBPixelPlacement>> pixelHistoryOpt = App.getDatabase().getPixelHistoryAt(x, y);
+	    
+	    return Historical.fromDB(pixelHistoryOpt.orElse(Collections.emptyList()));
 	}
+
 
 	public static Historical fromDB(DBPixelPlacement pixelPlacement) {
 		if (pixelPlacement == null) return null;
