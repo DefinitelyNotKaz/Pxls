@@ -1930,6 +1930,57 @@ public class WebHandler {
         exchange.getResponseSender().send(App.getGson().toJson(lookup));
     }
 
+    public void historical(HttpServerExchange exchange) {
+        User user = exchange.getAttachment(AuthReader.USER);
+
+        // if (user != null && user.isBanned()) {
+        //     send(StatusCodes.FORBIDDEN, exchange, "");
+        //     return;
+        // }
+
+        Deque<String> xq = exchange.getQueryParameters().get("x");
+        Deque<String> yq = exchange.getQueryParameters().get("y");
+
+        if (xq == null || xq.isEmpty() || yq == null || yq.isEmpty()) {
+            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+            exchange.endExchange();
+            return;
+        }
+
+        int x = (int) Math.floor(Float.parseFloat(xq.element()));
+        int y = (int) Math.floor(Float.parseFloat(yq.element()));
+        if (x < 0 || x >= App.getWidth() || y < 0 || y >= App.getHeight()) {
+            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+            exchange.endExchange();
+            return;
+        }
+
+        exchange.getResponseHeaders()
+                .put(Headers.CONTENT_TYPE, "application/json")
+                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
+
+        Historical historical;
+        historical = Historical.fromDB(x, y);
+        if (historical != null && App.getSnipMode()) {
+            // historical = historical.asSnipRedacted();
+        }
+        
+        Integer id;
+        if (historical == null) {
+            id = null;
+        } else {
+            id = historical.id;
+        }
+
+        // if (user == null) {
+        //     App.getDatabase().insertLookup(null, exchange.getAttachment(IPReader.IP), id);
+        // } else {
+        //     App.getDatabase().insertLookup(user.getId(), exchange.getAttachment(IPReader.IP), id);
+        // }
+
+        exchange.getResponseSender().send(App.getGson().toJson(historical));
+    }
+
     public void report(HttpServerExchange exchange) {
         User user = exchange.getAttachment(AuthReader.USER);
 

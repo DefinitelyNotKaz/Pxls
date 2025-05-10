@@ -353,6 +353,25 @@ public class Database {
     }
 
     /**
+     * Gets the history of a pixel and user information from the coordinates.
+     * @param y The pixel's y-coordinate.
+     * @return The pixel and user information.
+     */
+    public Optional<DBPixelPlacement> getPixelHistoryAt(int x, int y) {
+        Optional<DBPixelPlacement> pp;
+        try {
+            pp = jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.time, p.mod_action, u.id as u_id, u.username, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.x = :x AND p.y = :y")
+                    .bind("x", x)
+                    .bind("y", y)
+                    .map(new DBPixelPlacement.Mapper())
+                    .findFirst());
+        } catch (NullPointerException e) {
+            return Optional.empty();
+        }
+        return pp;
+    }
+
+    /**
      * Gets a pixel by its ID, using the specified handle (or a new one if null).
      * @param handle The handle.
      * @param id The ID.
