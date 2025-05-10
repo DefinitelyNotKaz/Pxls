@@ -1933,10 +1933,10 @@ public class WebHandler {
     public void historical(HttpServerExchange exchange) {
         User user = exchange.getAttachment(AuthReader.USER);
 
-        // if (user != null && user.isBanned()) {
-        //     send(StatusCodes.FORBIDDEN, exchange, "");
-        //     return;
-        // }
+        if (user != null && user.isBanned()) {
+            send(StatusCodes.FORBIDDEN, exchange, "");
+            return;
+        }
 
         Deque<String> xq = exchange.getQueryParameters().get("x");
         Deque<String> yq = exchange.getQueryParameters().get("y");
@@ -1961,9 +1961,9 @@ public class WebHandler {
 
         Historical historical;
         historical = Historical.fromDB(x, y);
-        if (historical != null && App.getSnipMode()) {
-            // historical = historical.asSnipRedacted();
-        }
+        // if (historical != null && App.getSnipMode()) {
+             // historical = historical.asSnipRedacted();
+        // }
         
         Integer id;
         if (historical == null) {
