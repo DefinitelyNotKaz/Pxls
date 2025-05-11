@@ -353,6 +353,28 @@ public class Database {
     }
 
     /**
+     * Gets the history of a pixel and user information from the coordinates.
+     * @param x The pixel's x-coordinate.
+     * @param y The pixel's y-coordinate.
+     * @return Optional list of pixel and user information.
+     */
+    public Optional<List<DBPixelPlacement>> getPixelHistoryAt(int x, int y) {
+        try {
+            List<DBPixelPlacement> placements = jdbi.withHandle(handle ->
+                handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.time, p.mod_action, u.id as u_id, u.username, u.ban_expiry, u.is_shadow_banned, u.pixel_count, u.pixel_count_alltime, u.login_with_ip, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.x = :x AND p.y = :y ORDER BY p.time ASC")
+                    .bind("x", x)
+                    .bind("y", y)
+                    .map(new DBPixelPlacement.Mapper())
+                    .list()
+            );
+
+            return placements.isEmpty() ? Optional.empty() : Optional.of(placements);
+        } catch (Exception e) {
+            return Optional.empty();
+        }
+    }
+
+    /**
      * Gets a pixel by its ID, using the specified handle (or a new one if null).
      * @param handle The handle.
      * @param id The ID.
